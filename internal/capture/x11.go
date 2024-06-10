@@ -1,3 +1,5 @@
+//go:build linux
+
 package capture
 
 import (
@@ -8,25 +10,29 @@ import (
 	"image/color"
 )
 
-type X11Capture struct {
+type X11 struct {
 	conn *xgb.Conn
 }
 
-func NewX11Capture() (*X11Capture, error) {
+func NewScreenCapturer() (ScreenCapturer, error) {
+	return NewX11()
+}
+
+func NewX11() (*X11, error) {
 	conn, err := xgb.NewConn()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to X server: %w", err)
 	}
-	return &X11Capture{conn: conn}, nil
+	return &X11{conn: conn}, nil
 }
 
-func (x *X11Capture) CaptureScreen() (*image.RGBA, error) {
+func (x *X11) CaptureScreenShot() (*image.RGBA, error) {
 	setup := xproto.Setup(x.conn)
 	screen := setup.DefaultScreen(x.conn)
 	return captureWindow(x.conn, xproto.Window(screen.Root))
 }
 
-func (x *X11Capture) CaptureWindow(windowID uint32) (*image.RGBA, error) {
+func (x *X11) CaptureWindowShot(windowID uint32) (*image.RGBA, error) {
 	return captureWindow(x.conn, xproto.Window(windowID))
 }
 
